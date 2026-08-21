@@ -60,11 +60,11 @@ Response JSON fields:
 
 Sample request:
 
-    {"uuid":"593a5f37-b4ea-4437-8001-67945d26e566","text":"hello my name is jerry the octopus, here at your service!","voice":"am_liam","speed":1.0,"sample_rate":48000}
+    {"uuid":"593a5f37-b4ea-4437-8001-67945d26e566","text":"hello my name is jerry the octopus, here at your service!","voice":"am_liam","speed":1.0,"sample_rate":24000}
 
 Sample socket call:
 
-    echo '{"uuid":"593a5f37-b4ea-4437-8001-67945d26e566","text":"hello my name is jerry the octopus, here at your service!","voice":"am_liam","speed":1.0,"sample_rate":48000}' | socat - UNIX-CONNECT:build/tts.sock
+    echo '{"uuid":"593a5f37-b4ea-4437-8001-67945d26e566","text":"hello my name is jerry the octopus, here at your service!","voice":"am_liam","speed":1.0,"sample_rate":2400}' | socat - UNIX-CONNECT:build/tts.sock
 
 Typical success response:
 
