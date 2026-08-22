@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 class TTSSocketServer:
     """TTS Unix socket server implementation"""
 
-    def __init__(self,config: TTSConfig):
+    def __init__(self, config: TTSConfig):
         """Initialize the TTS socket server
 
         Args:
@@ -37,11 +37,7 @@ class TTSSocketServer:
         file = await asyncio.get_event_loop().run_in_executor(
             None,
             self.tts.generate,
-            request.text,
-            request.voice,
-            request.uuid,
-            request.speed,
-            request.sample_rate,
+            request,
         )
 
         return TTSResponse(
@@ -61,36 +57,39 @@ class TTSSocketServer:
             reader (asyncio.StreamReader): The stream reader for the client connection
             writer (asyncio.StreamWriter): The stream writer for the client connection
         """
-        while line := await reader.readline():
-            try:
-                request_data = TTSRequest.from_json_bytes(line)
-            except ValueError as e:
-                logger.exception(f"Failed to parse TTS request: {e}")
-                response = TTSResponse(
-                    type="parse",
-                    status="error",
-                    uuid=None,
-                    message=str(e),
-                    filename=None,
-                )
+        try:
+            while line := await reader.readline():
+                try:
+                    request_data = TTSRequest.from_json_bytes(line)
+                except ValueError as e:
+                    logger.exception(f"Failed to parse TTS request: {e}")
+                    response = TTSResponse(
+                        type="parse",
+                        status="error",
+                        uuid=None,
+                        message=str(e),
+                        filename=None,
+                    )
+                    writer.write(response.to_json_bytes() + b"\n")
+                    await writer.drain()
+                    continue
+                try:
+                    response = await self.generate_sync(request_data)
+                except Exception as e:
+                    logger.exception(f"Failed to generate TTS: {e}")
+                    response = TTSResponse(
+                        type="generate",
+                        status="error",
+                        uuid=request_data.uuid,
+                        message=str(e),
+                        filename=None,
+                    )
                 writer.write(response.to_json_bytes() + b"\n")
                 await writer.drain()
-                continue
-            try:
-                response = await self.generate_sync(request_data)
-            except Exception as e:
-                logger.exception(f"Failed to generate TTS: {e}")
-                response = TTSResponse(
-                    type="generate",
-                    status="error",
-                    uuid=request_data.uuid,
-                    message=str(e),
-                    filename=None,
-                )
-            writer.write(response.to_json_bytes() + b"\n")
-            await writer.drain()
-
-        writer.close()
+        finally:
+            if not writer.is_closing():
+                writer.close()
+                await writer.wait_closed()
 
     def _parse_request(self, data: bytes) -> TTSRequest:
         """Parse the incoming request data into a TTSRequest object

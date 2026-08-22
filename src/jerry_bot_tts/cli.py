@@ -49,8 +49,11 @@ async def run_server(socket_path: Path, write_path: Path, config: TTSConfig) -> 
     )
 
     logger.info("Server listening on socket: %s", socket_path)
-    async with socket_server:
-        await socket_server.serve_forever()
+    try:
+        async with socket_server:
+            await socket_server.serve_forever()
+    finally:
+        socket_path.unlink(missing_ok=True)
 
 
 def main() -> int:
