@@ -10,7 +10,7 @@
                 "id": "play",
                 "color": "terminal.ansiGreen"
             },
-            "command": "poetry run jerry-bot-tts --socket-path build/tts.sock --write-path build/out --lang-code a",
+            "command": "poetry run jerry-bot-tts --socket-path build/tts.sock --write-path build/out",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
