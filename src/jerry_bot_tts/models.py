@@ -1,10 +1,17 @@
 """Pydantic models"""
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, SocketPath, DirectoryPath
 
 
 class TTSConfig(BaseModel):
     """TTS configuration model"""
+
+    socket_path: SocketPath = Field(
+        ..., description="Path to the Unix socket for TTS requests"
+    )
+    write_path: DirectoryPath = Field(
+        ..., description="Directory to write the generated audio files"
+    )
 
     lang_code: str = Field(..., description="Language code for TTS", examples=["a"])
     default_speed: float = Field(
@@ -54,6 +61,14 @@ class TTSRequest(BaseModel):
         except ValidationError as e:
             raise ValueError(f"Invalid TTS request data: {e}") from e
 
+    def to_json_bytes(self) -> bytes:
+        """Convert the TTSRequest instance to JSON-encoded bytes
+
+        Returns:
+            bytes: The JSON-encoded bytes representing the TTS request
+        """
+        return self.model_dump_json().encode()
+
 
 class TTSResponse(BaseModel):
     """TTS response model"""
@@ -83,3 +98,18 @@ class TTSResponse(BaseModel):
             bytes: The JSON-encoded bytes representing the TTS response
         """
         return self.model_dump_json().encode()
+
+    @classmethod
+    def from_json_bytes(cls, data: bytes) -> "TTSResponse":
+        """Create a TTSResponse instance from JSON-encoded bytes
+
+        Args:
+            data (bytes): The JSON-encoded bytes representing the TTS response
+
+        Returns:
+            TTSResponse: The TTSResponse instance
+        """
+        try:
+            return cls.model_validate_json(data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid TTS response data: {e}") from e

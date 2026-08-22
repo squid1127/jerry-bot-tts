@@ -20,41 +20,16 @@ def build_parser() -> argparse.ArgumentParser:
         description="Run the jerry-bot TTS Unix socket daemon.",
     )
 
-    parser.add_argument(
-        "--socket-path",
-        type=Path,
-        required=True,
-        help="Path to the Unix socket file.",
-    )
-    parser.add_argument(
-        "--write-path",
-        type=Path,
-        required=True,
-        help="Directory where generated audio files are written.",
-    )
-
-    parser.add_argument(
-        "--lang-code",
-        required=True,
-        help="Language code passed to Kokoro's KPipeline.",
-    )
-    parser.add_argument(
-        "--default-speed",
-        type=float,
-        default=TTSConfig.model_fields["default_speed"].default,
-        help="Default speaking speed when a request does not override it.",
-    )
-    parser.add_argument(
-        "--default-sample-rate",
-        type=int,
-        default=TTSConfig.model_fields["default_sample_rate"].default,
-        help="Sample rate for generated audio.",
-    )
-    parser.add_argument(
-        "--file-extension",
-        default=TTSConfig.model_fields["file_extension"].default,
-        help="File extension for generated audio files.",
-    )
+    # Auto-generate the help message from the TTSConfig model
+    for field_name, field in TTSConfig.model_fields.items():
+        kwargs = {}
+        if field.default is not None:
+            kwargs["default"] = field.default
+        if field.description:
+            kwargs["help"] = field.description
+        if field.annotation is not None:
+            kwargs["type"] = field.annotation
+        parser.add_argument(f"--{field_name.replace('_', '-')}", **kwargs)
 
     return parser
 
@@ -66,11 +41,7 @@ async def run_server(socket_path: Path, write_path: Path, config: TTSConfig) -> 
     if socket_path.exists():
         socket_path.unlink()
 
-    server = TTSSocketServer(
-        socket_path=socket_path,
-        write_path=write_path,
-        tts_config=config,
-    )
+    server = TTSSocketServer(config)
 
     socket_server = await asyncio.start_unix_server(
         server.handle_client,
@@ -89,10 +60,10 @@ def main() -> int:
 
     try:
         config = TTSConfig(
-            lang_code=args.lang_code,
-            default_speed=args.default_speed,
-            default_sample_rate=args.default_sample_rate,
-            file_extension=args.file_extension,
+            **{
+                field_name: getattr(args, field_name)
+                for field_name in TTSConfig.model_fields.keys()
+            }
         )
     except ValidationError as e:
         parser.error(str(e))

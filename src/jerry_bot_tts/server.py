@@ -14,17 +14,15 @@ logger = get_logger(__name__)
 class TTSSocketServer:
     """TTS Unix socket server implementation"""
 
-    def __init__(self, socket_path: Path, write_path: Path, tts_config: TTSConfig):
+    def __init__(self,config: TTSConfig):
         """Initialize the TTS socket server
 
         Args:
-            socket_path (str): The path to the Unix socket
-            write_path (str): The path to the directory where audio files will be written
-            tts_config (TTSConfig): The TTS configuration
+
+            config (TTSConfig): The TTS configuration
         """
-        self.socket_path = socket_path
-        self.tts_config = tts_config
-        self.tts = TTS(write_path=write_path, config=tts_config)
+        self.config = config
+        self.tts = TTS(self.config)
 
     async def generate_sync(self, request: TTSRequest) -> TTSResponse:
         """Generate TTS audio synchronously
