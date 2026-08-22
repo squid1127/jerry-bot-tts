@@ -1,15 +1,16 @@
 """Pydantic models"""
 
-from pydantic import BaseModel, Field, ValidationError, SocketPath, DirectoryPath
+from pydantic import BaseModel, Field, ValidationError
+from pathlib import Path
 
 
 class TTSConfig(BaseModel):
     """TTS configuration model"""
 
-    socket_path: SocketPath = Field(
+    socket_path: Path = Field(
         ..., description="Path to the Unix socket for TTS requests"
     )
-    write_path: DirectoryPath = Field(
+    write_path: Path = Field(
         ..., description="Directory to write the generated audio files"
     )
 
