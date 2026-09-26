@@ -1,7 +1,8 @@
 """Pydantic models"""
 
-from pydantic import BaseModel, Field, ValidationError
 from pathlib import Path
+
+from pydantic import BaseModel, Field, ValidationError
 
 
 class TTSConfig(BaseModel):

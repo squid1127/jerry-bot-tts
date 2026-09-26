@@ -2,6 +2,12 @@
 
 `jerry-bot-tts` is a Unix socket daemon that converts text to speech with the Kokoro TTS pipeline. It is intended to run as a child process of jerry-bot or another application that needs a small local TTS service. Each request writes one audio file to disk and receives a JSON response containing its filename.
 
+## Piper branch
+
+Experimental branch that uses piper instead of koroto
+
+Current conclusion: piper sucks, may come back to this later
+
 ## Installation
 
 The package requires Python 3.11 or 3.12. Install it with Poetry:
@@ -10,8 +16,7 @@ The package requires Python 3.11 or 3.12. Install it with Poetry:
 poetry install
 ```
 
-Kokoro also needs its normal runtime assets and dependencies available in the
-selected Python environment.
+~~Kokoro also needs its normal runtime assets and dependencies available in the selected Python environment.~~
 
 ## Configuration and startup
 

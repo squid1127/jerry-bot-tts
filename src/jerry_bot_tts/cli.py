@@ -65,7 +65,7 @@ def main() -> int:
         config = TTSConfig(
             **{
                 field_name: getattr(args, field_name)
-                for field_name in TTSConfig.model_fields.keys()
+                for field_name in TTSConfig.model_fields
             }
         )
     except ValidationError as e:

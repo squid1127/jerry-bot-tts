@@ -1,11 +1,11 @@
 """TTS implementation"""
 
-import soundfile
 from pathlib import Path
-from kokoro import KPipeline
+import wave
+from piper import PiperVoice, SynthesisConfig
 
-from .models import TTSConfig, TTSRequest
 from .logging import get_logger
+from .models import TTSConfig, TTSRequest
 
 logger = get_logger(__name__)
 
@@ -19,26 +19,30 @@ class TTS:
         Args:
             config (TTSConfig): The TTS configuration
         """
-        from kokoro import (
-            KPipeline,
-        )  # only import kokoro here for performance reasons, as it takes a while to load the module
 
-        self.pipelines: dict[str, KPipeline] = {}
+        self.pipelines: dict[str, PiperVoice] = {}
         self.config = config
 
         if not self.write_path.exists():
             self.write_path.mkdir(parents=True, exist_ok=True)
             
-    def get_pipeline(self, lang_code: str) -> KPipeline:
+    def find_voice(self, path: Path = Path()) -> Path:
+        """Search for a voice file that matches"""
+        
+        for f in path.glob("*.onnx"):
+            return f
+        raise FileNotFoundError
+            
+    def get_voice(self, voice: str) -> PiperVoice:
         """Get the TTS pipeline for the given language code
 
         Args:
             lang_code (str): The language code for the TTS pipeline
         """
-        if lang_code not in self.pipelines:
-            self.pipelines[lang_code] = KPipeline(lang_code)
+        if voice not in self.pipelines:
+            self.pipelines[voice] = PiperVoice.load(self.find_voice())
 
-        return self.pipelines[lang_code]
+        return self.pipelines[voice]
 
     def generate(
         self,
@@ -53,6 +57,13 @@ class TTS:
             Path: The path to the generated audio file
         """
         audio_path = self.write_path / f"{request.uuid}{self.config.file_extension}"
+        voice = self.get_voice(request.voice)
+        syn_config = SynthesisConfig(
+            length_scale=(1.0 / request.speed),  # twice as slow
+            noise_scale=1.0,  # more audio variation
+            noise_w_scale=1.0,  # more speaking variation
+            normalize_audio=False, # use raw audio from voice
+        )
 
         logger.info(
             "Generating TTS for UUID: %s, text: %s, voice: %s, speed: %s, sample_rate: %s",
@@ -63,16 +74,8 @@ class TTS:
             request.sample_rate,
         )
 
-        with soundfile.SoundFile(
-            audio_path,
-            mode="w",
-            samplerate=request.sample_rate,
-            channels=1,
-        ) as file:
-            for _, _, audio in self.get_pipeline(request.lang_code)(
-                request.text, voice=request.voice, speed=request.speed,
-            ):
-                file.write(audio)  # type: ignore
+        with wave.open(str(audio_path), "wb") as wav_file:
+            voice.synthesize_wav(request.text, wav_file, syn_config=syn_config)
 
         return audio_path
 

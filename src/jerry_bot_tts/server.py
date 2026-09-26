@@ -1,11 +1,10 @@
 """Main server implementation"""
 
 import asyncio
-from pathlib import Path
 import json
 
 from .logging import get_logger
-from .models import TTSRequest, TTSConfig, TTSResponse
+from .models import TTSConfig, TTSRequest, TTSResponse
 from .tts import TTS
 
 logger = get_logger(__name__)
