@@ -2,6 +2,20 @@
 
 `jerry-bot-tts` is a Unix socket daemon that converts text to speech with the Kokoro TTS pipeline. It is intended to run as a child process of jerry-bot or another application that needs a small local TTS service. Each request writes one audio file to disk and receives a JSON response containing its filename.
 
+## Docker
+
+Run the published image with `build/` mounted at `/data`:
+
+```sh
+mkdir -p build
+docker run --rm \
+  -v "$PWD/build:/data" \
+  ghcr.io/squid1127/jerry-bot-tts:main
+```
+
+The daemon listens on `build/tts.sock`; generated audio files are written to
+`build/audio/`. The container runs in the foreground and stops with `Ctrl+C`.
+
 ## Installation
 
 The package requires Python 3.11 or 3.12. Install it with Poetry:
