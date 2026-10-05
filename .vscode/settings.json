@@ -1,4 +1,12 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:poetry",
-    "python-envs.defaultPackageManager": "ms-python.python:poetry"
+    "python-envs.defaultPackageManager": "ms-python.python:poetry",
+    "cSpell.words": [
+        "endswith",
+        "Kokoro",
+        "pydantic",
+        "sendall",
+        "socat",
+        "soundfile"
+    ]
 }
