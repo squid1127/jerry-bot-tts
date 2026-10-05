@@ -19,6 +19,7 @@ torch = { version = "^2.4", source = "pytorch-cpu" }
 kokoro = "^0.9.4"
 soundfile = "^0.14.0"
 pydantic = "^2.13.5"
+aiofiles = "^25.1.0"
 
 [project.scripts]
 jerry-bot-tts = "jerry_bot_tts:main"
