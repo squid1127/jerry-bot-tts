@@ -39,5 +39,9 @@ RUN apt-get update \
 
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
+COPY healthcheck.py /app/healthcheck.py
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD ["python", "/app/healthcheck.py"]
 
 CMD ["jerry-bot-tts", "--socket-path", "/data/tts.sock", "--write-path", "/data/audio"]
