@@ -8,11 +8,17 @@ authors = [
 license = "MIT"
 readme = "README.md"
 requires-python = ">3.10, <3.13"
-dependencies = [
-    "kokoro (>=0.9.4,<0.10.0)",
-    "soundfile (>=0.14.0,<0.15.0)",
-    "pydantic (>=2.13.4,<3.0.0)",
-]
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[tool.poetry.dependencies]
+torch = { version = "^2.4", source = "pytorch-cpu" }
+kokoro = "^0.9.4"
+soundfile = "^0.14.0"
+pydantic = "^2.13.5"
 
 [project.scripts]
 jerry-bot-tts = "jerry_bot_tts:main"

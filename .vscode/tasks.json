@@ -18,6 +18,50 @@
                 "kind": "build",
                 "isDefault": true
             }
-        }
+        },
+        {
+            "label": "Podman Build",
+            "type": "shell",
+            "icon": {
+                "id": "build",
+                "color": "terminal.ansiGreen"
+            },
+            "command": "podman build . -t jerry-bot-tts:test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+            }
+        },
+        {
+            "label": "Docker Build",
+            "type": "shell",
+            "icon": {
+                "id": "build",
+                "color": "terminal.ansiGreen"
+            },
+            "command": "docker build . -t jerry-bot-tts:test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+            }
+        },        {
+            "label": "Podman Run",
+            "type": "shell",
+            "icon": {
+                "id": "run-with-deps",
+                "color": "terminal.ansiGreen"
+            },
+            "command": "podman run --rm -v ${workspaceFolder}/build:/data localhost/jerry-bot-tts:test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+            }
+        },
     ]
 }
