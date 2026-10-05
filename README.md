@@ -39,11 +39,12 @@ poetry run jerry-bot-tts \
 
 The command-line options are generated from `TTSConfig`:
 
-| Option             | Required | Default | Description                                                                                                    |
-| ------------------ | -------- | ------- | -------------------------------------------------------------------------------------------------------------- |
-| `--socket-path`    | Yes      | None    | Filesystem path for the Unix domain socket. An existing socket at this path is removed when the server starts. |
-| `--write-path`     | Yes      | None    | Directory where generated audio files are written. It is created if necessary.                                 |
-| `--file-extension` | No       | `.wav`  | Extension used when naming generated files.                                                                    |
+| Option                      | Required | Default | Description                                                                                                    |
+| --------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| `--socket-path`             | Yes      | None    | Filesystem path for the Unix domain socket. An existing socket at this path is removed when the server starts. |
+| `--write-path`              | Yes      | None    | Directory where generated audio files are written. It is created if necessary.                                 |
+| `--max-concurrent-requests` | No       | `5`     | Maximum number of TTS generation requests processed concurrently.                                              |
+| `--file-extension`          | No       | `.wav`  | Extension used when naming generated files.                                                                    |
 
 Inspect the available options with:
 
@@ -66,7 +67,8 @@ JSON:
 
 ### Request
 
-`TTSRequest` has three required fields and three optional fields:
+Generation requests use `TTSRequest`, with three required fields and three
+optional fields:
 
 | Field         | Type    | Default | Description                                                                         |
 | ------------- | ------- | ------- | ----------------------------------------------------------------------------------- |
@@ -93,9 +95,30 @@ For example:
 `speed`, `sample_rate`, and `lang_code` are request properties, not daemon
 startup options. Omitting them uses the defaults shown above.
 
+### Command requests
+
+The same socket also accepts control requests. Each has a `command` and `uuid`:
+
+| Command | Description                                                         |
+| ------- | ------------------------------------------------------------------- |
+| `ping`  | Check that the server is responsive.                                |
+| `clean` | Attempt to remove `.wav` files from the configured write directory. |
+
+For example, a ping request is:
+
+```json
+{
+  "command": "ping",
+  "uuid": "593a5f37-b4ea-4437-8001-67945d26e566"
+}
+```
+
+To clean generated audio, send the same shape with `"command": "clean"`.
+Command values are lowercase.
+
 ### Response
 
-Every valid request receives a `TTSResponse`:
+Generation requests receive a `TTSResponse`:
 
 | Field      | Type           | Description                                                            |
 | ---------- | -------------- | ---------------------------------------------------------------------- |
@@ -116,6 +139,22 @@ A successful response looks like this:
   "filename": "593a5f37-b4ea-4437-8001-67945d26e566.wav"
 }
 ```
+
+Control requests receive a `TTSCommandResponse` with the command, success flag,
+request UUID, and an optional message. For example, a successful ping returns:
+
+```json
+{
+  "command": "ping",
+  "ok": true,
+  "uuid": "593a5f37-b4ea-4437-8001-67945d26e566",
+  "message": "Pong"
+}
+```
+
+The `clean` command responds with `ok: true` and a cleanup message when handled;
+if cleanup raises an error, the response has `ok: false` and includes the error
+message.
 
 The complete path is `write_path / filename`. A malformed JSON line or a
 request that fails validation returns an error response with `type` set to

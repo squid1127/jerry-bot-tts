@@ -1,11 +1,12 @@
 """TTS implementation"""
 
-import soundfile
 from pathlib import Path
+
+import soundfile
 from kokoro import KPipeline
 
-from .models import TTSConfig, TTSRequest
 from .logging import get_logger
+from .models import TTSConfig, TTSRequest
 
 logger = get_logger(__name__)
 

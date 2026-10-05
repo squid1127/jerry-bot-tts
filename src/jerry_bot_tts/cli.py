@@ -65,7 +65,7 @@ def main() -> int:
         config = TTSConfig(
             **{
                 field_name: getattr(args, field_name)
-                for field_name in TTSConfig.model_fields.keys()
+                for field_name in TTSConfig.model_fields
             }
         )
     except ValidationError as e:
@@ -76,8 +76,8 @@ def main() -> int:
     except KeyboardInterrupt:
         logger.info("Server stopped by user.")
         return 130
-    except OSError as e:
-        logger.exception("Failed to start server: %s", e)
+    except OSError:
+        logger.exception("Failed to start server")
         return 1
 
     return 0

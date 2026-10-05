@@ -1,8 +1,16 @@
 """Pydantic models"""
 
-from pydantic import BaseModel, Field, ValidationError
+from enum import Enum
 from pathlib import Path
 
+from pydantic import BaseModel, Field, ValidationError
+
+
+class TTSCommand(Enum):
+    """TTS command enumeration"""
+
+    PING = "ping"
+    CLEAN = "clean"
 
 class TTSConfig(BaseModel):
     """TTS configuration model"""
@@ -13,10 +21,53 @@ class TTSConfig(BaseModel):
     write_path: Path = Field(
         ..., description="Directory to write the generated audio files"
     )
+    max_concurrent_requests: int = Field(
+        5, description="Maximum number of concurrent TTS requests", examples=[1, 5, 10]
+    )
 
     file_extension: str = Field(
         ".wav", description="File extension for audio output", examples=[".wav"]
     )
+    
+class TTSCommandRequest(BaseModel):
+    """TTS command request model"""
+
+    command: TTSCommand = Field(
+        ..., description="Command to execute", examples=[TTSCommand.PING, TTSCommand.CLEAN]
+    )
+    uuid: str = Field(
+        ...,
+        description="UUID4 string for the command request. This is used to identify the response.",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+    )
+
+class TTSCommandResponse(BaseModel):
+    """TTS command response model"""
+
+    command: TTSCommand = Field(
+        ..., description="Command that was executed", examples=[TTSCommand.PING, TTSCommand.CLEAN]
+    )
+    ok: bool = Field(
+        ..., description="Indicates if the command was executed successfully", examples=[True, False]
+    )
+    uuid: str = Field(
+        ...,
+        description="UUID4 string for the command response. This is used to identify the response.",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+    )
+    message: str | None = Field(
+        None,
+        description="Optional message describing the result of the command execution",
+        examples=["Command executed successfully", "Failed to execute command"],
+    )
+    
+    def to_json_bytes(self) -> bytes:
+        """Convert the TTSCommandResponse instance to JSON-encoded bytes
+
+        Returns:
+            bytes: The JSON-encoded bytes representing the TTS command response
+        """
+        return self.model_dump_json().encode()
 
 
 class TTSRequest(BaseModel):
