@@ -18,7 +18,7 @@ priority = "explicit"
 torch = { version = "^2.4", source = "pytorch-cpu" }
 kokoro = "^0.9.4"
 soundfile = "^0.14.0"
-pydantic = "^2.13.5"
+pydantic = "^2.14.1"
 aiofiles = "^25.1.0"
 
 [project.scripts]
